@@ -6,7 +6,7 @@ import tempfile
 import time
 import uuid
 from pathlib import Path
-from typing import List, Optional, Union, Any
+from typing import List, Optional, Union, Any, Dict
 
 from fastapi import Depends, FastAPI, Header, HTTPException, Request
 from fastapi.middleware.cors import CORSMiddleware
@@ -33,6 +33,7 @@ SECURE_1PSIDTS = (
 API_KEY = os.getenv("API_KEY", "")
 ENABLE_THINKING = os.getenv("ENABLE_THINKING", "false").lower() == "true"
 COOKIE_DIR = os.getenv("GEMINI_COOKIE_PATH", "/tmp/gemini_webapi")
+CLASH_PROXIES = os.getenv("CLASH_PROXIES", "")
 
 # Ensure cookie dir exists
 Path(COOKIE_DIR).mkdir(parents=True, exist_ok=True)
@@ -88,9 +89,21 @@ async def get_gemini_client() -> GeminiClient:
                 raise HTTPException(status_code=500, detail="SECURE_1PSID not configured")
             try:
                 # GeminiClient persists/refreshes cookies; path is controlled by env GEMINI_COOKIE_PATH
-                _gemini_client = GeminiClient(SECURE_1PSID, SECURE_1PSIDTS)
+                # Parse and use proxy if CLASH_PROXIES is set
+                proxy = None
+                if CLASH_PROXIES:
+                    proxy = parse_clash_proxy(CLASH_PROXIES)
+                    if proxy:
+                        logger.info(f"解析 Clash 代理成功: {proxy}")
+                    else:
+                        logger.warning("解析 Clash 代理失败，将不使用代理")
+                
+                _gemini_client = GeminiClient(SECURE_1PSID, SECURE_1PSIDTS, proxy=proxy)
                 await _gemini_client.init(timeout=60, auto_close=True, close_delay=300, auto_refresh=True)
-                logger.info("Gemini client initialized successfully")
+                if proxy:
+                    logger.info(f"Gemini 客户端通过代理初始化成功: {proxy}")
+                else:
+                    logger.info("Gemini 客户端初始化成功（无代理）")
             except Exception as e:
                 logger.exception("Failed to initialize Gemini client")
                 raise HTTPException(status_code=500, detail=f"Failed to initialize Gemini client: {e}")
@@ -110,6 +123,61 @@ async def verify_api_key(authorization: Optional[str] = Header(None)) -> None:
     token = authorization.split(" ", 1)[1].strip()
     if token != API_KEY:
         raise HTTPException(status_code=401, detail="Unauthorized")
+
+# -----------------------------------------------------------------------------
+# Proxy utilities
+# -----------------------------------------------------------------------------
+def parse_clash_proxy(clash_proxies: str) -> Optional[str]:
+    """解析 Clash 节点信息并返回代理 URL
+    
+    Args:
+        clash_proxies: Clash 节点 JSON 字符串
+        
+    Returns:
+        代理 URL (如: socks5://127.0.0.1:1080) 或 None
+    """
+    if not clash_proxies:
+        return None
+        
+    try:
+        # 尝试解析 JSON
+        proxy_config = json.loads(clash_proxies)
+        
+        # 根据不同类型生成代理 URL
+        proxy_type = proxy_config.get('type', '').lower()
+        server = proxy_config.get('server', '127.0.0.1')
+        port = proxy_config.get('port', 1080)
+        
+        if proxy_type == 'vmess':
+            # VMess 需要转换为本地代理端口，通常需要 clash 客户端运行
+            # 这里假设 clash 客户端在本地运行，默认端口 1080
+            return "socks5://127.0.0.1:1080"
+        elif proxy_type == 'vless':
+            return "socks5://127.0.0.1:1080"
+        elif proxy_type == 'trojan':
+            return "socks5://127.0.0.1:1080"
+        elif proxy_type == 'ss':
+            return "socks5://127.0.0.1:1080"
+        elif proxy_type == 'ssr':
+            return "socks5://127.0.0.1:1080"
+        elif proxy_type == 'http':
+            return f"http://{server}:{port}"
+        elif proxy_type == 'socks5':
+            return f"socks5://{server}:{port}"
+        else:
+            # 默认使用本地 clash 代理
+            logger.warning(f"不支持的代理类型: {proxy_type}，使用默认本地代理")
+            return "socks5://127.0.0.1:1080"
+            
+    except json.JSONDecodeError as e:
+        logger.error(f"解析 Clash 代理配置失败: {e}")
+        # 如果不是 JSON，尝试直接作为代理 URL
+        if clash_proxies.startswith(('http://', 'https://', 'socks5://')):
+            return clash_proxies
+        return None
+    except Exception as e:
+        logger.error(f"处理代理配置时出错: {e}")
+        return None
 
 # -----------------------------------------------------------------------------
 # Utilities
@@ -216,12 +284,29 @@ def prepare_conversation(messages: List[Message]) -> tuple[str, List[str]]:
 async def root():
     masked_sid = (SECURE_1PSID[:5] + "..." if SECURE_1PSID else "")
     masked_sidts = (SECURE_1PSIDTS[:5] + "..." if SECURE_1PSIDTS else "")
+    
+    # 显示代理信息
+    proxy_info = None
+    if CLASH_PROXIES:
+        try:
+            proxy_config = json.loads(CLASH_PROXIES)
+            proxy_info = {
+                "name": proxy_config.get("name", ""),
+                "type": proxy_config.get("type", ""),
+                "server": proxy_config.get("server", ""),
+                "port": proxy_config.get("port", "")
+            }
+        except:
+            proxy_info = {"raw": CLASH_PROXIES[:50] + "..." if len(CLASH_PROXIES) > 50 else CLASH_PROXIES}
+    
     return {
         "status": "online",
         "message": "Gemini API FastAPI Server is running",
         "has_api_key": bool(API_KEY),
         "sid_prefix": masked_sid,
         "sidts_prefix": masked_sidts,
+        "proxy_enabled": bool(CLASH_PROXIES),
+        "proxy_info": proxy_info,
     }
 
 @app.get("/v1/models")
