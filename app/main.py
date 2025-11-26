@@ -225,7 +225,7 @@ async def root():
     }
 
 @app.get("/v1/models")
-async def list_models(_: None = Depends(verify_api_key)):
+async def list_models():
     models = []
     for m in Model:
         try:
