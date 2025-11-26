@@ -17,7 +17,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     curl \
     && rm -rf /var/lib/apt/lists/*
 
-# Install Mihomo (Clash Meta) - simplified approach
+# Install Mihomo (Clash Meta)
 RUN echo "安装 Mihomo (Clash Meta)..." \
     && MIHOMO_VERSION="v1.18.5" \
     && cd /tmp \

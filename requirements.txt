@@ -3,7 +3,7 @@ uvicorn[standard]~=0.34.0
 loguru~=0.7.3
 orjson~=3.11.1
 pydantic~=2.12.2
-httpx[http2]~=0.28.1
+httpx[http2,socks]~=0.28.1
 gemini-webapi
 aiohttp-socks
 PyYAML
