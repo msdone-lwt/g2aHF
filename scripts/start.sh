@@ -37,19 +37,9 @@ if [ "$PROXY_MODE" = true ]; then
     
     # 启动 Clash 服务（后台运行）
     echo -e "${GREEN}启动 Clash 服务...${NC}"
-    # 使用 clash-premium 或 clash-meta
-    if command -v clash-premium &> /dev/null; then
-        clash-premium -d /tmp/clash > /tmp/clash.log 2>&1 &
-    elif command -v clash-meta &> /dev/null; then
-        clash-meta -d /tmp/clash > /tmp/clash.log 2>&1 &
-    elif command -v clash &> /dev/null; then
-        clash -d /tmp/clash > /tmp/clash.log 2>&1 &
-    else
-        echo -e "${RED}错误: 未找到 Clash 可执行文件${NC}"
-        exit 1
-    fi
-    
+    clash -d /tmp/clash > /tmp/clash.log 2>&1 &
     CLASH_PID=$!
+    
     echo -e "${GREEN}Clash 服务已启动 (PID: $CLASH_PID)${NC}"
     
     # 等待 Clash 启动

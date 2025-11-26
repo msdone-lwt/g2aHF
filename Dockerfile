@@ -17,16 +17,15 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     curl \
     && rm -rf /var/lib/apt/lists/*
 
-# Install Mihomo (Clash Meta)
+# Install Mihomo (Clash Meta) - simplified approach
 RUN echo "安装 Mihomo (Clash Meta)..." \
     && MIHOMO_VERSION="v1.18.5" \
-    && MIHOMO_ARCH="linux-amd64" \
-    && wget -O /tmp/mihomo.gz "https://github.com/MetaCubeX/mihomo/releases/download/${MIHOMO_VERSION}/mihomo-${MIHOMO_ARCH}-${MIHOMO_VERSION}.gz" \
     && cd /tmp \
-    && gunzip mihomo.gz \
-    && chmod +x mihomo-${MIHOMO_ARCH}-${MIHOMO_VERSION} \
-    && mv mihomo-${MIHOMO_ARCH}-${MIHOMO_VERSION} /usr/local/bin/clash \
-    && rm -rf /tmp/mihomo*
+    && wget "https://github.com/MetaCubeX/mihomo/releases/download/${MIHOMO_VERSION}/mihomo-linux-amd64-${MIHOMO_VERSION}.gz" \
+    && gunzip mihomo-linux-amd64-${MIHOMO_VERSION}.gz \
+    && chmod +x mihomo-linux-amd64-${MIHOMO_VERSION} \
+    && mv mihomo-linux-amd64-${MIHOMO_VERSION} /usr/local/bin/clash \
+    && rm -f /tmp/mihomo*
 
 # Install PyYAML for config generation
 RUN pip install --no-cache-dir PyYAML
@@ -37,6 +36,9 @@ RUN pip install --no-cache-dir --upgrade pip && pip install --no-cache-dir -r re
 COPY app ./app
 COPY scripts ./scripts
 COPY README.md ./README.md
+
+# Make scripts executable
+RUN chmod +x /home/appuser/app/scripts/*.sh
 
 # Runtime env
 ENV PYTHONUNBUFFERED=1 \
@@ -56,4 +58,3 @@ USER appuser
 
 # Start services with our custom script
 CMD ["/home/appuser/app/scripts/start.sh"]
-
