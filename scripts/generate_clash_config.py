@@ -14,12 +14,12 @@ from pathlib import Path
 def generate_clash_config():
     """生成 Clash 配置文件"""
     
-    # 基础 Clash 配置
+    # 基础 Clash 配置 - 全局代理模式
     config = {
         'mixed-port': 1080,
         'allow-lan': False,
         'bind-address': '127.0.0.1',
-        'mode': 'rule',
+        'mode': 'global',  # 设置为全局代理模式
         'log-level': 'info',
         'external-controller': '127.0.0.1:9090',
         'dns': {
@@ -56,8 +56,9 @@ def generate_clash_config():
         clash_proxy = convert_to_clash_proxy(proxy_config)
         if clash_proxy:
             config['proxies'].append(clash_proxy)
+            # 在全局模式下，设置默认代理
             config['proxy-groups'][0]['proxies'].insert(0, clash_proxy['name'])
-            print(f"成功添加代理节点: {clash_proxy['name']}")
+            print(f"成功添加代理节点: {clash_proxy['name']} (全局代理模式)")
         else:
             print("警告: 代理配置转换失败", file=sys.stderr)
             
