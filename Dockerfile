@@ -17,17 +17,16 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     curl \
     && rm -rf /var/lib/apt/lists/*
 
-# Install Clash
-RUN echo "安装 Clash..." \
-    && CLASH_VERSION="v1.18.0" \
-    && CLASH_ARCH="linux-amd64" \
-    && wget -O /tmp/clash.tar.gz "https://github.com/Dreamacro/clash/releases/download/${CLASH_VERSION}/clash-${CLASH_ARCH}-${CLASH_VERSION}.gz" \
+# Install Mihomo (Clash Meta)
+RUN echo "安装 Mihomo (Clash Meta)..." \
+    && MIHOMO_VERSION="v1.18.5" \
+    && MIHOMO_ARCH="linux-amd64" \
+    && wget -O /tmp/mihomo.gz "https://github.com/MetaCubeX/mihomo/releases/download/${MIHOMO_VERSION}/mihomo-${MIHOMO_ARCH}-${MIHOMO_VERSION}.gz" \
     && cd /tmp \
-    && gunzip clash.tar.gz \
-    && tar -xf clash.tar \
-    && mv clash-${CLASH_ARCH}-${CLASH_VERSION}/clash /usr/local/bin/ \
-    && chmod +x /usr/local/bin/clash \
-    && rm -rf /tmp/clash*
+    && gunzip mihomo.gz \
+    && chmod +x mihomo-${MIHOMO_ARCH}-${MIHOMO_VERSION} \
+    && mv mihomo-${MIHOMO_ARCH}-${MIHOMO_VERSION} /usr/local/bin/clash \
+    && rm -rf /tmp/mihomo*
 
 # Install PyYAML for config generation
 RUN pip install --no-cache-dir PyYAML

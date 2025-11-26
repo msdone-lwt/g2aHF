@@ -161,6 +161,56 @@ def parse_clash_proxy(clash_proxies: str) -> Optional[str]:
         elif proxy_type == 'ssr':
             return "socks5://127.0.0.1:1080"
         elif proxy_type == 'http':
+            username = proxy_config.get('username')
+            password = proxy_config.get('password')
+            if username and password:
+                return f"http://{username}:{password}@{server}:{port}"
+            else:
+                return f"http://{server}:{port}"
+        elif proxy_type == 'socks5':
+            username = proxy_config.get('username')
+            password = proxy_config.get('password')
+            if username and password:
+                return f"socks5://{username}:{password}@{server}:{port}"
+            else:
+                return f"socks5://{server}:{port}"
+        else:
+            # 默认使用本地 clash 代理
+            logger.warning(f"不支持的代理类型: {proxy_type}，使用默认本地代理")
+            return "socks5://127.0.0.1:1080"
+            
+    except json.JSONDecodeError as e:
+        logger.error(f"解析 Clash 代理配置失败: {e}")
+        # 如果不是 JSON，尝试直接作为代理 URL
+        if clash_proxies.startswith(('http://', 'https://', 'socks5://')):
+            return clash_proxies
+        return None
+    except Exception as e:
+        logger.error(f"处理代理配置时出错: {e}")
+        return None
+        
+    try:
+        # 尝试解析 JSON
+        proxy_config = json.loads(clash_proxies)
+        
+        # 根据不同类型生成代理 URL
+        proxy_type = proxy_config.get('type', '').lower()
+        server = proxy_config.get('server', '127.0.0.1')
+        port = proxy_config.get('port', 1080)
+        
+        if proxy_type == 'vmess':
+            # VMess 需要转换为本地代理端口，通常需要 clash 客户端运行
+            # 这里假设 clash 客户端在本地运行，默认端口 1080
+            return "socks5://127.0.0.1:1080"
+        elif proxy_type == 'vless':
+            return "socks5://127.0.0.1:1080"
+        elif proxy_type == 'trojan':
+            return "socks5://127.0.0.1:1080"
+        elif proxy_type == 'ss':
+            return "socks5://127.0.0.1:1080"
+        elif proxy_type == 'ssr':
+            return "socks5://127.0.0.1:1080"
+        elif proxy_type == 'http':
             return f"http://{server}:{port}"
         elif proxy_type == 'socks5':
             return f"socks5://{server}:{port}"
