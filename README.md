@@ -1,7 +1,8 @@
 # g2aHF
 
 一个部署在 Hugging Face Spaces 上的 Gemini WebAPI 代理服务。支持 OpenAI 兼容的 Chat Completions API，流式响应，图片输入以及多种代理配置。
-
+![log](./assets/log.png)
+![use](./assets/use.png)
 ## 功能特性
 
 - 🚀 OpenAI 兼容的 Chat Completions API
