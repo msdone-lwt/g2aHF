@@ -1,11 +1,3 @@
----
-title: G2
-emoji: 🐢
-colorFrom: blue
-colorTo: purple
-sdk: docker
-pinned: false
----
 # g2aHF
 
 一个部署在 Hugging Face Spaces 上的 Gemini WebAPI 代理服务。支持 OpenAI 兼容的 Chat Completions API，流式响应，图片输入以及多种代理配置。
@@ -13,7 +5,6 @@ pinned: false
 ## 功能特性
 
 - 🚀 OpenAI 兼容的 Chat Completions API
-- 🧰 支持 function call、mcp
 - 🔄 支持流式响应 (SSE)
 - 🖼️ 支持图片输入 (base64 data URLs)
 - 🌐 代理支持 (VMess, VLESS, Trojan, SS, HTTP, SOCKS5)
@@ -38,7 +29,7 @@ pinned: false
   "name": "[vmess]节点名称",
   "type": "vmess",
   "server": "your_server_ip",
-  "port": your_port,
+  "port": "your_port",
   "uuid": "your_uuid",
   "alterId": 0,
   "cipher": "auto",
