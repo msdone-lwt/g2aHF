@@ -94,5 +94,9 @@ OpenAI 兼容的聊天接口，支持：
 - 图片输入 (base64 data URLs)
 - 多种模型选择
 
+感谢以下开源项目的支持：
+- https://github.com/HanaokaYuzu/Gemini-API
+- https://github.com/zhiyu1998/Gemi2Api-Server
 
 本项目仅供学习和研究使用。请遵守相关法律法规和 Google Gemini 的使用条款。
+
