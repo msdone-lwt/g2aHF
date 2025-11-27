@@ -303,8 +303,6 @@ async def root():
             proxy_info = {
                 "name": proxy_config.get("name", ""),
                 "type": proxy_config.get("type", ""),
-                "server": proxy_config.get("server", ""),
-                "port": proxy_config.get("port", "")
             }
         except:
             proxy_info = {"raw": CLASH_PROXIES[:50] + "..." if len(CLASH_PROXIES) > 50 else CLASH_PROXIES}
